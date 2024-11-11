@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal - Mehdi BERRADA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 1rem;
+            border-bottom: 1px solid #00ff00;
+        }
+
+            nav ul {
+                list-style: none;
+                display: flex;
+                justify-content: space-around;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+
+            nav a {
+                color: #00ff00;
+                text-decoration: none;
+                font-weight: bold;
+                transition: all 0.3s;
+            }
+
+                nav a:hover {
+                    color: #fff;
+                    text-shadow: 0 0 5px #00ff00;
+                }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .terminal {
+            background-color: rgba(0, 0, 0, 0.9);
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            max-width: 900px;
+            min-height: 80vh;
+            position: relative;
+        }
+
+        .terminal-header {
+            background: #333;
+            padding: 8px;
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: -20px -20px 20px -20px;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .close {
+            background: #ff5f56;
+        }
+
+        .minimize {
+            background: #ffbd2e;
+        }
+
+        .maximize {
+            background: #27c93f;
+        }
+
+        .terminal-title {
+            color: #ccc;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .ascii-art {
+            color: #00ff00;
+            white-space: pre;
+            font-family: monospace;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .command-line {
+            color: #00ff00;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt {
+            color: #00ff00;
+            margin-right: 10px;
+        }
+
+        .commands {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .command {
+            color: #00ff00;
+            text-decoration: none;
+            cursor: pointer;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+            .command:hover {
+                color: #fff;
+                text-shadow: 0 0 5px #00ff00;
+            }
+
+        .output {
+            color: #fff;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .document-section {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border: 1px solid #00ff00;
+            margin: 20px 0;
+            border-radius: 5px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .document-section::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, #00ff00, transparent);
+                animation: scan 2s linear infinite;
+            }
+
+        @keyframes scan {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: #00ff00;
+            color: #000;
+            padding: 15px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+            .download-btn:hover {
+                background: #fff;
+                box-shadow: 0 0 15px #00ff00;
+                transform: scale(1.05);
+            }
+
+        form {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            background: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #fff;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+            input:focus, textarea:focus {
+                border-color: #fff;
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+                outline: none;
+            }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+            button:hover {
+                background: #fff;
+                box-shadow: 0 0 10px #00ff00;
+            }
+
+        .document-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        h1, h2 {
+            color: #00ff00;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff00;
+            text-align: center;
+            padding: 1rem;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border-top: 1px solid #00ff00;
+        }
+
+        .cert-list {
+            list-style: none;
+            margin: 15px 0;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+            .cert-list li {
+                margin: 10px 0;
+                color: #fff;
+                position: relative;
+                padding-left: 20px;
+            }
+
+                .cert-list li::before {
+                    content: '>';
+                    color: #00ff00;
+                    position: absolute;
+                    left: 0;
+                }
+
+        .content {
+            margin-bottom: 60px;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: #00ff00;
+            margin-left: 5px;
+            animation: blink 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="matrix-bg" id="matrix"></canvas>
+
+    <nav>
+        <ul>
+            <li><a href="#" onclick="showSection('work')">Mon Travail</a></li>
+            <li><a href="#" onclick="showSection('contact')">Contact</a></li>
+        </ul>
+    </nav>
+
+    <div class="content">
+        <div id="work" class="section active">
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="terminal-buttons">
+                        <div class="terminal-button close"></div>
+                        <div class="terminal-button minimize"></div>
+                        <div class="terminal-button maximize"></div>
+                    </div>
+                    <div class="terminal-title">root@kali-linux: ~/portfolio</div>
+                </div>
+
+                <div class="ascii-art">
+                    _____ _____ _    _ _____ _____
+                    |     |   __| |  | |     |     |
+                    | | | |   __| |__| |-   -|  |  |
+                    |_|_|_|_____|_____|_____|_____|
+                </div>
+
+                <div class="command-line">
+                    <span class="prompt">root@kali:~$</span> Bienvenue sur le portefolio de BERRADA Mehdi - Cybersecurity Student
+                </div>
+
+                <div class="command-line">
+                    <span class="prompt">root@kali:~$</span> Available commands:
+                </div>
+
+                <div class="commands">
+                    <a href="#" class="command" onclick="showCommand('about')">./about.sh</a>
+                    <a href="#" class="command" onclick="showCommand('cv')">cat cv.txt</a>
+                    <a href="#" class="command" onclick="showCommand('skills')">ls -la skills/</a>
+                    <a href="#" onclick="showSection('contact')" class="command">./contact.sh</a>
+                </div>
+
+                <div id="about" class="output" style="display: none;">
+                    [*] Scanning target profile...
+                    <br><br>
+                    > Étudiant en BUT Réseaux & Télécommunications à l'IUT de Montbéliard
+                    <br>
+                    > Spécialisation en Cybersécurité
+                    <br>
+                    > À la recherche d'un stage de 4 mois (3 mars - 13 juin 2025)
+                    <br><br>
+                    [+] Scan completed successfully
+                    <br><br>
+                    [+] Loading video presentation...
+                    <br><br>
+                    <div style="position: relative; width: 100%; max-width: 600px; margin: 20px auto; border: 1px solid #00ff00; padding: 10px; border-radius: 5px;">
+                        <video width="100%" controls style="border-radius: 3px;">
+                            <source src="video_cyber.mp4" type="video/mp4">
+                            Votre navigateur ne supporte pas la lecture de vidéos.
+                        </video>
+                    </div>
+                </div>
+
+                <div id="cv" class="output" style="display: none;">
+                    <div class="document-section">
+                        <div class="document-icon">📄</div>
+                        <h2>Curriculum Vitae</h2>
+                        <p>Étudiant en BUT Réseaux & Télécommunications - Spécialisation Cybersécurité</p>
+                        <p>À la recherche d'un stage de 4 mois (3 mars - 13 juin 2025)</p>
+                        <a href="06 30 65 80 28 (9).pdf" class="download-btn" download>
+                            [ Télécharger le CV ]
+                        </a>
+                    </div>
+                </div>
+
+                <div id="skills" class="output" style="display: none;">
+                    <div class="document-section">
+                        <div class="document-icon">🔐</div>
+                        <h2>Certifications & Compétences</h2>
+                        <ul class="cert-list">
+                            <li><a href="CCNAv7-2-2023.pdf" download class="cert-link">Cisco CCNAv7-2-2023-certificate<</a></li>
+                            <li><a href="CCNAv7-M3-BUT2-S.pdf" download class="cert-link">Cisco CCNAv7-M3-BUT2-S-certificate</a></li>
+                            <li><a href="CCNAv7-2-2023-2.pdf" download class="cert-link">CCNAV7-S1-2023-certificate</a></li>
+                            <li>Réseaux & Télécommunication</li>
+                            <li>Site web (HTML, CSS, PHP)</li>
+                            <li>Programmation (C++, Java, Arduino, SQL)</li>
+                            <li>Cybersécurité</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="contact" class="section">
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="terminal-buttons">
+                        <div class="terminal-button close"></div>
+                        <div class="terminal-button minimize"></div>
+                        <div class="terminal-button maximize"></div>
+                    </div>
+                    <div class="terminal-title">root@kali-linux: ~/contact</div>
+                </div>
+
+                <div class="command-line">
+                    <span class="prompt">root@kali:~$</span> ./contact.sh
+                </div>
+
+                <form action="https://formsubmit.co/mehdicode1@gmail.com" method="POST">
+                    <input type="text" name="name" placeholder="[Entrez votre nom]" required>
+                    <input type="email" name="email" placeholder="[Entrez votre email]" required>
+                    <textarea name="message" placeholder="[Entrez votre message]" rows="6" required></textarea>
+
+                    <!-- Configuration FormSubmit -->
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_next" value="#work">
+                    <input type="hidden" name="_subject" value="Nouveau message Portfolio">
+
+                    <button type="submit">[ Envoyer le message ]</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 Mehdi BERRADA - Portfolio Cybersécurité</p>
+        <a href="https://www.linkedin.com/in/mehdi-berrada-a159b0325/" target="_blank" style="text-decoration: none; display: block; margin-top: 10px;">
+            <img src="https://cdn.jsdelivr.net/npm/simple-icons@v3/icons/linkedin.svg" alt="LinkedIn" style="width: 30px; height: 30px; filter: invert(100%) brightness(200%); transition: transform 0.3s;">
+        </a>
+    </footer>
+    <script>
+        // Matrix background
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZ';
+        const numbers = '0123456789';
+        const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+        const characters = letters + numbers + symbols;
+
+        const fontSize = 10;
+        const columns = canvas.width / fontSize;
+
+        const drops = [];
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975)
+                    drops[i] = 0;
+
+                drops[i]++;
+            }
+        }
+
+        setInterval(draw, 33);
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        // Commandes
+        function showCommand(commandId) {
+            document.querySelectorAll('.output').forEach(output => {
+                output.style.display = 'none';
+            });
+            document.getElementById(commandId).style.display = 'block';
+        }
+
+        // Afficher about par défaut
+        showCommand('about');
+    </script>
+</body>
+</html>
